@@ -43,7 +43,7 @@ export default function BottomNav() {
               position: 'relative',
             }}>
               <span style={{ fontSize: '20px' }}>{item.icon}</span>
-              {'badge' in item && item.badge > 0 && (
+              {!!('badge' in item && (item as any).badge) && (
                 <span style={{
                   position: 'absolute', top: 0, right: '8px',
                   background: 'var(--green)', color: '#000',
@@ -51,7 +51,7 @@ export default function BottomNav() {
                   width: '14px', height: '14px', borderRadius: '50%',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                 }}>
-                  {item.badge}
+                  {(item as any).badge}
                 </span>
               )}
               <span>{item.label}</span>
