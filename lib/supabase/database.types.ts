@@ -20,6 +20,7 @@ export interface Database {
           name?: string
           avatar_url?: string | null
         }
+        Relationships: []
       }
       listings: {
         Row: {
@@ -73,6 +74,7 @@ export interface Database {
           status?: 'active' | 'sold' | 'deleted'
           updated_at?: string
         }
+        Relationships: []
       }
       favorites: {
         Row: {
@@ -89,6 +91,7 @@ export interface Database {
         Update: {
           listing_id?: string
         }
+        Relationships: []
       }
     }
   }
