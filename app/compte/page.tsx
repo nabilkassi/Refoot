@@ -7,7 +7,7 @@ import { useFavorites } from '@/context/FavoritesContext'
 import { MOCK_LISTINGS } from '@/lib/mock-data'
 
 export default function ComptePage() {
-  const { user, logout } = useAuth()
+  const { user, profile, logout } = useAuth()
   const { favorites } = useFavorites()
   const router = useRouter()
 
@@ -43,7 +43,8 @@ export default function ComptePage() {
   }
 
   const myListings = MOCK_LISTINGS.filter(l => l.sellerId === user.id)
-  const initials = user.name.slice(0, 2).toUpperCase()
+  const displayName = profile?.name ?? user.email?.split('@')[0] ?? 'U'
+  const initials = displayName.slice(0, 2).toUpperCase()
 
   return (
     <div style={{ paddingTop: '60px', minHeight: '100vh' }}>
@@ -73,7 +74,7 @@ export default function ComptePage() {
           </div>
           <div style={{ flex: 1 }}>
             <div style={{ fontFamily: 'var(--font-syne), Syne, sans-serif', fontWeight: 700, fontSize: '18px' }}>
-              {user.name}
+              {displayName}
             </div>
             <div style={{ color: 'var(--text-muted)', fontSize: '13px', marginTop: '2px' }}>
               {user.email}

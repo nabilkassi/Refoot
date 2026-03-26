@@ -6,11 +6,12 @@ import { useAuth } from '@/context/AuthContext'
 import { useFavorites } from '@/context/FavoritesContext'
 
 export default function Navbar() {
-  const { user, logout } = useAuth()
+  const { user, profile, logout } = useAuth()
   const { favorites } = useFavorites()
   const router = useRouter()
 
-  const initials = user ? user.name.slice(0, 2).toUpperCase() : null
+  const displayName = profile?.name ?? user?.email?.split('@')[0] ?? 'U'
+  const initials = user ? displayName.slice(0, 2).toUpperCase() : null
 
   return (
     <nav style={{
