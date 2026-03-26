@@ -30,8 +30,9 @@ export async function generateStaticParams() {
   return MOCK_LISTINGS.map(l => ({ id: l.id }))
 }
 
-export default function AnnoncePage({ params }: { params: { id: string } }) {
-  const listing = MOCK_LISTINGS.find(l => l.id === params.id)
+export default async function AnnoncePage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
+  const listing = MOCK_LISTINGS.find(l => l.id === id)
   if (!listing) notFound()
 
   const isUsed = listing.type === 'used'

@@ -21,7 +21,7 @@ const CONDITIONS = [
   { value: 'correct', label: 'État correct — Usure visible' },
 ]
 
-interface FormData {
+interface ListingFormData {
   brand: string
   model: string
   terrain: string
@@ -36,7 +36,7 @@ export default function VendrePage() {
   const { user } = useAuth()
   const router = useRouter()
   const [step, setStep] = useState<1 | 2 | 3>(1)
-  const [form, setForm] = useState<FormData>({
+  const [form, setForm] = useState<ListingFormData>({
     brand: '', model: '', terrain: '', size: '',
     condition: '', price: '', description: '', images: [],
   })
@@ -44,7 +44,7 @@ export default function VendrePage() {
   const [submitError, setSubmitError] = useState('')
   const [submitting, setSubmitting] = useState(false)
 
-  const set = (key: keyof FormData, value: string) =>
+  const set = (key: keyof ListingFormData, value: string) =>
     setForm(f => ({ ...f, [key]: value }))
 
   const canGoStep2 = form.brand && form.model && form.terrain && form.size

@@ -86,7 +86,7 @@ export interface Database {
           user_id: string
           listing_id: string
         }
-        Update: never
+        Update: Record<string, never>
       }
     }
   }
