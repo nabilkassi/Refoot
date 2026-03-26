@@ -3,6 +3,7 @@ import type { Filters } from '@/lib/types'
 import type { Database } from './database.types'
 
 export type ListingRow = Database['public']['Tables']['listings']['Row']
+type ListingInsert = Database['public']['Tables']['listings']['Insert']
 
 export async function getListings(filters: Partial<Filters> = {}, sort = 'price_asc') {
   const supabase = createClient()
@@ -51,7 +52,7 @@ export async function getListing(id: string) {
 }
 
 export async function createListing(
-  listing: Database['public']['Tables']['listings']['Insert'],
+  listing: ListingInsert,
   images: File[]
 ) {
   const supabase = createClient()
