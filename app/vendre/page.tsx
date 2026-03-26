@@ -1,6 +1,9 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { useAuth } from '@/context/AuthContext'
+import { createListing } from '@/lib/supabase/queries'
 
 const BRANDS = ['Nike', 'adidas', 'Puma', 'New Balance', 'Mizuno', 'Asics', 'Joma', 'Autre']
 const TERRAINS = [
@@ -30,12 +33,16 @@ interface FormData {
 }
 
 export default function VendrePage() {
+  const { user } = useAuth()
+  const router = useRouter()
   const [step, setStep] = useState<1 | 2 | 3>(1)
   const [form, setForm] = useState<FormData>({
     brand: '', model: '', terrain: '', size: '',
     condition: '', price: '', description: '', images: [],
   })
   const [submitted, setSubmitted] = useState(false)
+  const [submitError, setSubmitError] = useState('')
+  const [submitting, setSubmitting] = useState(false)
 
   const set = (key: keyof FormData, value: string) =>
     setForm(f => ({ ...f, [key]: value }))
@@ -43,10 +50,32 @@ export default function VendrePage() {
   const canGoStep2 = form.brand && form.model && form.terrain && form.size
   const canGoStep3 = form.condition && form.price
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    // TODO: POST to API
-    setSubmitted(true)
+    if (!user) { router.push('/login'); return }
+    setSubmitError('')
+    setSubmitting(true)
+    try {
+      await createListing(
+        {
+          type: 'used',
+          brand: form.brand,
+          model: form.model,
+          terrain: form.terrain as any,
+          size: Number(form.size),
+          condition: form.condition as any,
+          price: Number(form.price),
+          description: form.description || null,
+          seller_id: user.id,
+        },
+        form.images
+      )
+      setSubmitted(true)
+    } catch (err: any) {
+      setSubmitError(err.message ?? 'Erreur lors de la publication')
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   if (submitted) {
@@ -371,12 +400,17 @@ export default function VendrePage() {
                 )}
               </div>
 
+              {submitError && (
+                <div style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: 'var(--radius-sm)', padding: '10px 14px', fontSize: '13px', color: '#f87171' }}>
+                  {submitError}
+                </div>
+              )}
               <div style={{ display: 'flex', gap: '10px' }}>
                 <button type="button" onClick={() => setStep(2)} style={{ ...btnOutline, flex: 1 }}>
                   ← Retour
                 </button>
-                <button type="submit" style={{ ...btnPrimary, flex: 2 }}>
-                  ⚽ Publier l'annonce
+                <button type="submit" disabled={submitting} style={{ ...btnPrimary, flex: 2, opacity: submitting ? 0.7 : 1 }}>
+                  {submitting ? 'Publication...' : '⚽ Publier l\'annonce'}
                 </button>
               </div>
             </div>

@@ -1,75 +1,79 @@
 'use client'
 
 import { createContext, useContext, useState, useEffect, type ReactNode } from 'react'
+import { createClient } from '@/lib/supabase/client'
+import type { User } from '@supabase/supabase-js'
 
-export interface User {
+export interface Profile {
   id: string
-  email: string
   name: string
-  avatar?: string
+  avatar_url: string | null
 }
 
 interface AuthContextValue {
   user: User | null
+  profile: Profile | null
   loading: boolean
   login: (email: string, password: string) => Promise<void>
   register: (name: string, email: string, password: string) => Promise<void>
-  logout: () => void
+  logout: () => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null)
 
-// TODO: remplacer par appels Supabase Auth
-async function mockLogin(email: string, password: string): Promise<User> {
-  await new Promise(r => setTimeout(r, 600))
-  if (password.length < 6) throw new Error('Mot de passe incorrect')
-  return {
-    id: 'user_' + btoa(email).slice(0, 8),
-    email,
-    name: email.split('@')[0],
-  }
-}
-
-async function mockRegister(name: string, email: string, _password: string): Promise<User> {
-  await new Promise(r => setTimeout(r, 600))
-  return {
-    id: 'user_' + btoa(email).slice(0, 8),
-    email,
-    name,
-  }
-}
-
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
+  const [profile, setProfile] = useState<Profile | null>(null)
   const [loading, setLoading] = useState(true)
+  const supabase = createClient()
+
+  const fetchProfile = async (userId: string) => {
+    const { data } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', userId)
+      .single()
+    if (data) setProfile(data)
+  }
 
   useEffect(() => {
-    try {
-      const stored = localStorage.getItem('refoot_user')
-      if (stored) setUser(JSON.parse(stored))
-    } catch {}
-    setLoading(false)
+    // Session initiale
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null)
+      if (session?.user) fetchProfile(session.user.id)
+      setLoading(false)
+    })
+
+    // Écoute les changements d'état auth
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null)
+      if (session?.user) fetchProfile(session.user.id)
+      else setProfile(null)
+    })
+
+    return () => subscription.unsubscribe()
   }, [])
 
   const login = async (email: string, password: string) => {
-    const u = await mockLogin(email, password)
-    setUser(u)
-    localStorage.setItem('refoot_user', JSON.stringify(u))
+    const { error } = await supabase.auth.signInWithPassword({ email, password })
+    if (error) throw new Error(error.message)
   }
 
   const register = async (name: string, email: string, password: string) => {
-    const u = await mockRegister(name, email, password)
-    setUser(u)
-    localStorage.setItem('refoot_user', JSON.stringify(u))
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: { data: { name } },
+    })
+    if (error) throw new Error(error.message)
   }
 
-  const logout = () => {
-    setUser(null)
-    localStorage.removeItem('refoot_user')
+  const logout = async () => {
+    await supabase.auth.signOut()
   }
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout }}>
+    <AuthContext.Provider value={{ user, profile, loading, login, register, logout }}>
       {children}
     </AuthContext.Provider>
   )
