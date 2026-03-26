@@ -31,7 +31,7 @@ export function FavoritesProvider({ children }: { children: ReactNode }) {
       .from('favorites')
       .select('listing_id')
       .eq('user_id', user!.id)
-    if (data) setFavorites(data.map(f => f.listing_id))
+    if (data) setFavorites((data as { listing_id: string }[]).map(f => f.listing_id))
   }
 
   const loadFromStorage = () => {
