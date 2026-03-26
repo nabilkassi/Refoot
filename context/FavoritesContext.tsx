@@ -16,6 +16,8 @@ export function FavoritesProvider({ children }: { children: ReactNode }) {
   const [favorites, setFavorites] = useState<string[]>([])
   const { user } = useAuth()
   const supabase = createClient()
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const db = supabase as any
 
   // Charge les favoris selon l'état auth
   useEffect(() => {
@@ -27,11 +29,11 @@ export function FavoritesProvider({ children }: { children: ReactNode }) {
   }, [user])
 
   const loadFromDB = async () => {
-    const { data } = await supabase
+    const { data } = await db
       .from('favorites')
       .select('listing_id')
       .eq('user_id', user!.id)
-    if (data) setFavorites((data as { listing_id: string }[]).map(f => f.listing_id))
+    if (data) setFavorites((data as { listing_id: string }[]).map((f: { listing_id: string }) => f.listing_id))
   }
 
   const loadFromStorage = () => {
@@ -55,12 +57,12 @@ export function FavoritesProvider({ children }: { children: ReactNode }) {
     if (user) {
       // Persistance en base
       if (isFaved) {
-        await supabase
+        await db
           .from('favorites')
           .delete()
           .match({ user_id: user.id, listing_id: listingId })
       } else {
-        await supabase
+        await db
           .from('favorites')
           .insert({ user_id: user.id, listing_id: listingId })
       }
