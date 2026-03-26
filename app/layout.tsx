@@ -3,6 +3,8 @@ import { Syne, DM_Sans } from 'next/font/google'
 import './globals.css'
 import Navbar from '@/components/Navbar'
 import BottomNav from '@/components/BottomNav'
+import { AuthProvider } from '@/context/AuthContext'
+import { FavoritesProvider } from '@/context/FavoritesContext'
 
 const syne = Syne({
   subsets: ['latin'],
@@ -28,9 +30,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="fr" className={`${syne.variable} ${dmSans.variable}`}>
       <body>
-        <Navbar />
-        <main>{children}</main>
-        <BottomNav />
+        <AuthProvider>
+          <FavoritesProvider>
+            <Navbar />
+            <main>{children}</main>
+            <BottomNav />
+          </FavoritesProvider>
+        </AuthProvider>
       </body>
     </html>
   )

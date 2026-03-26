@@ -1,13 +1,14 @@
 'use client'
 
-import { useState } from 'react'
+import { useFavorites } from '@/context/FavoritesContext'
 
 export default function FavButton({ listingId }: { listingId: string }) {
-  const [fav, setFav] = useState(false)
+  const { isFav, toggle } = useFavorites()
+  const fav = isFav(listingId)
 
   return (
     <button
-      onClick={() => setFav(f => !f)}
+      onClick={() => toggle(listingId)}
       aria-label={fav ? 'Retirer des favoris' : 'Ajouter aux favoris'}
       style={{
         background: fav ? 'rgba(239,68,68,0.1)' : 'var(--surface2)',
@@ -15,9 +16,7 @@ export default function FavButton({ listingId }: { listingId: string }) {
         borderRadius: '50%',
         width: '44px', height: '44px',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        fontSize: '18px',
-        cursor: 'pointer',
-        flexShrink: 0,
+        fontSize: '18px', cursor: 'pointer', flexShrink: 0,
         transition: 'background 0.2s, border-color 0.2s, transform 0.15s',
         transform: fav ? 'scale(1.1)' : 'scale(1)',
       }}
